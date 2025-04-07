@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML→画像変換ツール</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>HTML→画像変換ツール</h1>
+        <p>HTMLコードを入力またはアップロードして、画像に変換しダウンロードできます</p>
+    </header>
+
+    <main>
+        <section class="input-section">
+            <h2>HTMLの入力</h2>
+            <div class="tabs">
+                <button id="tab-text" class="tab-button active">テキスト入力</button>
+                <button id="tab-file" class="tab-button">ファイルアップロード</button>
+            </div>
+            
+            <div id="text-input-container" class="tab-content active">
+                <textarea id="html-input" placeholder="HTMLコードをここに入力してください..."></textarea>
+            </div>
+            
+            <div id="file-input-container" class="tab-content">
+                <input type="file" id="html-file" accept=".html,.htm">
+                <label for="html-file" class="file-label">HTMLファイルを選択</label>
+                <p id="file-name">ファイルが選択されていません</p>
+            </div>
+            
+            <div class="options">
+                <h3>出力設定</h3>
+                <div class="option-group">
+                    <label>画像形式:</label>
+                    <select id="image-format">
+                        <option value="png">PNG</option>
+                        <option value="jpeg">JPEG</option>
+                    </select>
+                </div>
+                <div class="option-group" id="jpeg-quality-container">
+                    <label>JPEG品質:</label>
+                    <input type="range" id="jpeg-quality" min="0" max="1" step="0.1" value="0.9">
+                    <span id="quality-value">0.9</span>
+                </div>
+                <div class="option-group">
+                    <label>背景色:</label>
+                    <input type="color" id="bg-color" value="#ffffff">
+                </div>
+                <div class="option-group">
+                    <label>スケール:</label>
+                    <input type="number" id="scale" min="1" max="3" step="0.1" value="1">
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="preview-button">プレビュー</button>
+                <button id="convert-button" disabled>変換してダウンロード</button>
+                <button id="clear-button">クリア</button>
+            </div>
+        </section>
+
+        <section class="preview-section">
+            <h2>プレビュー</h2>
+            <div id="preview-container">
+                <div id="html-preview"></div>
+            </div>
+            <div id="image-preview-container" style="display: none;">
+                <h3>画像プレビュー</h3>
+                <div id="image-preview"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 HTML→画像変換ツール</p>
+    </footer>
+
+    <!-- ライブラリの読み込み -->
+    <script src="js/html2canvas.min.js"></script>
+    <script src="js/FileSaver.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
