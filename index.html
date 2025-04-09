@@ -2,14 +2,24 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML→画像変換ツール</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="description" content="HTMLコードを画像、PDF、HTMLファイルとしてダウンロードできるツール">
+    <meta name="theme-color" content="#3498db">
+    <!-- iOS用設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HTML変換ツール">
+    <!-- Androidタッチアイコン -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- PWA対応 -->
+    <link rel="manifest" href="manifest.json">
+    <title>HTML変換・ダウンロードツール</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header>
-        <h1>HTML→画像変換ツール</h1>
-        <p>HTMLコードを入力またはアップロードして、画像に変換しダウンロードできます</p>
+        <h1>HTML変換・ダウンロードツール</h1>
+        <p>HTMLコードを入力またはアップロードして、画像・HTML・PDFでダウンロードできます</p>
     </header>
 
     <main>
@@ -56,7 +66,9 @@
             
             <div class="action-buttons">
                 <button id="preview-button">プレビュー</button>
-                <button id="convert-button" disabled>変換してダウンロード</button>
+                <button id="convert-button" disabled>画像変換・ダウンロード</button>
+                <button id="download-html-button" disabled>HTMLダウンロード</button>
+                <button id="download-pdf-button" disabled>PDFダウンロード</button>
                 <button id="clear-button">クリア</button>
             </div>
         </section>
@@ -74,12 +86,13 @@
     </main>
 
     <footer>
-        <p>© 2025 HTML→画像変換ツール</p>
+        <p>© 2025 HTML変換・ダウンロードツール</p>
     </footer>
 
     <!-- ライブラリの読み込み -->
     <script src="js/html2canvas.min.js"></script>
     <script src="js/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
