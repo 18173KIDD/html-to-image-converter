@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileName = document.getElementById('file-name');
     const previewButton = document.getElementById('preview-button');
     const convertButton = document.getElementById('convert-button');
+    const downloadHtmlButton = document.getElementById('download-html-button');
+    const downloadPdfButton = document.getElementById('download-pdf-button');
     const clearButton = document.getElementById('clear-button');
     const htmlPreview = document.getElementById('html-preview');
     const imagePreviewContainer = document.getElementById('image-preview-container');
@@ -71,7 +73,11 @@ document.addEventListener('DOMContentLoaded', function() {
         htmlPreview.innerHTML = '';
         imagePreviewContainer.style.display = 'none';
         imagePreview.innerHTML = '';
+        
+        // すべてのダウンロードボタンを無効化
         convertButton.disabled = true;
+        downloadHtmlButton.disabled = true;
+        downloadPdfButton.disabled = true;
         
         // ファイル入力もリセット
         if (htmlFile) {
@@ -106,14 +112,34 @@ document.addEventListener('DOMContentLoaded', function() {
         // HTMLプレビューを表示
         htmlPreview.innerHTML = currentHtmlSource;
         
-        // 変換ボタンを有効化
+        // 各ダウンロードボタンを有効化
         convertButton.disabled = false;
+        downloadHtmlButton.disabled = false;
+        downloadPdfButton.disabled = false;
         
         // 画像プレビューをリセット
         imagePreviewContainer.style.display = 'none';
         imagePreview.innerHTML = '';
     });
 
+    // モバイルデバイスの検出
+    function isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+    
+    // iOS端末の検出
+    function isIOSDevice() {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    }
+    
+    // モバイルブラウザタイプの検出
+    function getMobileBrowserType() {
+        const ua = navigator.userAgent;
+        if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) return 'safari';
+        if (/Chrome/i.test(ua)) return 'chrome';
+        return 'other';
+    }
+    
     // 変換ボタンのクリック時の処理
     convertButton.addEventListener('click', function() {
         if (!currentHtmlSource) {
@@ -125,141 +151,23 @@ document.addEventListener('DOMContentLoaded', function() {
         if (htmlPreview.innerHTML === '') {
             htmlPreview.innerHTML = currentHtmlSource;
         }
+        
+        // モバイルデバイスのログ出力
+        console.log('デバイス情報:', {
+            isMobile: isMobileDevice(),
+            isIOS: isIOSDevice(),
+            browserType: getMobileBrowserType()
+        });
 
         // 新しいアプローチ: iframeを使用してHTMLをレンダリングし、それをキャプチャする
         const iframe = document.createElement('iframe');
-        iframe.style.width = '1200px';  // より広いサイズに調整
-        iframe.style.height = '900px';  // より高いサイズに調整
+        // モバイルデバイスではサイズを小さくする
+        const isMobile = isMobileDevice();
+        iframe.style.width = isMobile ? '800px' : '1200px';
+        iframe.style.height = isMobile ? '600px' : '900px';
         iframe.style.border = 'none';
         iframe.style.position = 'fixed';
         iframe.style.top = '0';
         iframe.style.left = '0';
         iframe.style.zIndex = '-1000';  // 画面外に配置
         document.body.appendChild(iframe);
-
-        // テキストオーバーフロー問題を修正するためのスタイルを追加
-        const fixedHtmlSource = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                    /* テキストオーバーフロー問題を修正するためのスタイル */
-                    * {
-                        box-sizing: border-box;
-                        word-wrap: break-word;
-                        overflow-wrap: break-word;
-                    }
-                    body {
-                        margin: 0;
-                        padding: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    /* ユーザーのHTMLに影響を与えないように、特定のクラスを使用 */
-                    .html2img-container {
-                        width: 100%;
-                        padding: 20px;
-                        overflow: hidden;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="html2img-container">
-                    ${currentHtmlSource}
-                </div>
-            </body>
-            </html>
-        `;
-
-        // iframeにHTMLを書き込む
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        iframeDoc.open();
-        iframeDoc.write(fixedHtmlSource);
-        iframeDoc.close();
-
-        // iframeの読み込みが完了したらキャプチャ
-        iframe.onload = function() {
-            console.log('iframeの読み込みが完了しました');
-            
-            // html2canvasオプションの設定
-            const options = {
-                scale: parseFloat(scale.value),
-                backgroundColor: bgColor.value,
-                logging: true,
-                useCORS: true,
-                allowTaint: true,
-                foreignObjectRendering: true,
-                // コンテンツが切れないように設定
-                width: iframe.contentWindow.document.documentElement.scrollWidth,
-                height: iframe.contentWindow.document.documentElement.scrollHeight
-            };
-
-            // iframeの内容をキャプチャ
-            const container = iframeDoc.querySelector('.html2img-container');
-            html2canvas(container, options).then(function(canvas) {
-                console.log('Canvas生成成功: サイズ', canvas.width, 'x', canvas.height);
-                
-                // 画像形式とクオリティの設定
-                const format = imageFormat.value;
-                const quality = format === 'jpeg' ? parseFloat(jpegQuality.value) : 1.0;
-                
-                console.log('画像形式:', format, '品質:', quality);
-                
-                // 画像プレビューの表示
-                imagePreviewContainer.style.display = 'block';
-                imagePreview.innerHTML = '';
-                
-                const img = document.createElement('img');
-                img.src = canvas.toDataURL(format === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
-                img.style.maxWidth = '100%';
-                img.style.border = '1px solid #ddd';
-                imagePreview.appendChild(img);
-                console.log('プレビュー表示完了');
-                
-                // ダウンロード処理
-                canvas.toBlob(function(blob) {
-                    if (!blob) {
-                        console.error('Blobの生成に失敗しました');
-                        alert('画像データの生成に失敗しました。別の設定で試してください。');
-                        return;
-                    }
-                    
-                    console.log('Blob生成成功: サイズ', blob.size, 'bytes', 'タイプ:', blob.type);
-                    
-                    // ファイル名の生成（現在の日時を含む）
-                    const filename = 'html2img_' + getFormattedDate() + '.' + format;
-                    
-                    // FileSaver.jsを使用してダウンロード
-                    saveAs(blob, filename);
-                    console.log('ダウンロード開始:', filename);
-                    
-                    // 使用後にiframeを削除
-                    document.body.removeChild(iframe);
-                }, format === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
-                
-            }).catch(function(error) {
-                console.error('画像変換エラー:', error);
-                alert('画像の変換中にエラーが発生しました: ' + error.message);
-                document.body.removeChild(iframe);
-            });
-        };
-    });
-
-    // 日付フォーマット関数
-    function getFormattedDate() {
-        const date = new Date();
-        return date.getFullYear() + 
-            ('0' + (date.getMonth() + 1)).slice(-2) + 
-            ('0' + date.getDate()).slice(-2) + '_' + 
-            ('0' + date.getHours()).slice(-2) + 
-            ('0' + date.getMinutes()).slice(-2) + 
-            ('0' + date.getSeconds()).slice(-2);
-    }
-
-    // 初期表示設定
-    if (imageFormat.value !== 'jpeg') {
-        jpegQualityContainer.style.display = 'none';
-    }
-});
