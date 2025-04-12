@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const htmlInput = document.getElementById('html-input');
     const htmlFile = document.getElementById('html-file');
     const fileName = document.getElementById('file-name');
+    const fileNameInput = document.getElementById('file-name-input');
     const previewButton = document.getElementById('preview-button');
     const convertButton = document.getElementById('convert-button');
     const downloadHtmlButton = document.getElementById('download-html-button');
@@ -89,10 +90,15 @@ document.addEventListener('DOMContentLoaded', function() {
         downloadHtmlButton.disabled = true;
         downloadPdfButton.disabled = true;
         
-        // ファイル入力もリセット
+        // 入力欄をリセット
         if (htmlFile) {
             htmlFile.value = '';
             fileName.textContent = 'ファイルが選択されていません';
+        }
+        
+        // ファイル名入力欄もクリア
+        if (fileNameInput) {
+            fileNameInput.value = '';
         }
         
         console.log('入力内容をクリアしました');
@@ -129,6 +135,19 @@ document.addEventListener('DOMContentLoaded', function() {
         // プレビューフレームを表示
         previewFrame.style.display = 'block';
         
+        // プレビューフレームの高さを調整（ロード後）
+        previewFrame.onload = function() {
+            try {
+                // iframeのコンテンツの高さに合わせる（最小600px、最大1000px）
+                const height = Math.max(600, Math.min(1000, 
+                    previewFrame.contentWindow.document.body.scrollHeight || 600));
+                previewFrame.style.height = height + 'px';
+                console.log('プレビューの高さを調整しました:', height);
+            } catch (e) {
+                console.error('高さ調整エラー:', e);
+            }
+        };
+        
         // 各ダウンロードボタンを有効化
         convertButton.disabled = false;
         downloadHtmlButton.disabled = false;
@@ -163,6 +182,14 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('HTMLコードを入力するか、HTMLファイルをアップロードしてください。');
             return;
         }
+        
+        // ファイル名がまだ設定されていない場合は確認ダイアログを表示
+        if (!fileNameInput.value.trim()) {
+            const userFileName = prompt('ダウンロードするファイル名を入力してください（拡張子不要）:', 'html2img_' + getFormattedDate());
+            if (userFileName !== null) {
+                fileNameInput.value = userFileName.trim();
+            }
+        }
 
         // プレビューがまだ表示されていない場合は表示する
         const previewFrame = document.getElementById('preview-frame');
@@ -187,7 +214,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // モバイルデバイスではサイズを小さくする
         const isMobile = isMobileDevice();
         iframe.style.width = isMobile ? '800px' : '1200px';
-        iframe.style.height = isMobile ? '600px' : '900px';
+        // プレビューフレームの高さを参考にする（最小600px）
+        const previewHeight = document.getElementById('preview-frame').style.height;
+        const heightValue = parseInt(previewHeight) || 600;
+        iframe.style.height = isMobile ? 
+            Math.max(600, heightValue) + 'px' : 
+            Math.max(900, heightValue) + 'px';
         iframe.style.border = 'none';
         iframe.style.position = 'fixed';
         iframe.style.top = '0';
@@ -286,8 +318,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     console.log('Blob生成成功: サイズ', blob.size, 'bytes', 'タイプ:', blob.type);
                     
-                    // ファイル名の生成（現在の日時を含む）
-                    const filename = 'html2img_' + getFormattedDate() + '.' + format;
+                    // ファイル名の生成（ユーザー指定または現在の日時）
+                    let filename;
+                    if (fileNameInput && fileNameInput.value.trim() !== '') {
+                        // ユーザー指定のファイル名を使用（拡張子を追加）
+                        filename = fileNameInput.value.trim() + '.' + format;
+                    } else {
+                        // デフォルトのファイル名生成（現在の日時を含む）
+                        filename = 'html2img_' + getFormattedDate() + '.' + format;
+                    }
                     
                     // iOS Safariの場合は特別な処理
                     const isIOS = isIOSDevice();
@@ -398,10 +437,27 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('HTMLコードを入力するか、HTMLファイルをアップロードしてください。');
             return;
         }
+        
+        // ファイル名がまだ設定されていない場合は確認ダイアログを表示
+        if (!fileNameInput.value.trim()) {
+            const userFileName = prompt('ダウンロードするファイル名を入力してください（拡張子不要）:', 'download_' + getFormattedDate());
+            if (userFileName !== null) {
+                fileNameInput.value = userFileName.trim();
+            }
+        }
 
         // HTMLファイルを作成してダウンロード
         const blob = new Blob([currentHtmlSource], { type: 'text/html;charset=utf-8' });
-        const filename = 'download_' + getFormattedDate() + '.html';
+        
+        // ファイル名の設定（ユーザー指定または現在の日時）
+        let filename;
+        if (fileNameInput && fileNameInput.value.trim() !== '') {
+            // ユーザー指定のファイル名を使用（拡張子を追加）
+            filename = fileNameInput.value.trim() + '.html';
+        } else {
+            // デフォルトのファイル名生成（現在の日時を含む）
+            filename = 'download_' + getFormattedDate() + '.html';
+        }
         
         // iOS Safariの場合は特別な処理
         const isIOS = isIOSDevice();
@@ -475,6 +531,14 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('HTMLコードを入力するか、HTMLファイルをアップロードしてください。');
             return;
         }
+        
+        // ファイル名がまだ設定されていない場合は確認ダイアログを表示
+        if (!fileNameInput.value.trim()) {
+            const userFileName = prompt('ダウンロードするファイル名を入力してください（拡張子不要）:', 'pdf_' + getFormattedDate());
+            if (userFileName !== null) {
+                fileNameInput.value = userFileName.trim();
+            }
+        }
 
         // プレビューがまだ表示されていない場合は表示する
         const previewFrame = document.getElementById('preview-frame');
@@ -492,7 +556,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // モバイルデバイスではサイズを小さくする
         const isMobile = isMobileDevice();
         iframe.style.width = isMobile ? '800px' : '1200px';
-        iframe.style.height = isMobile ? '600px' : '900px';
+        // プレビューフレームの高さを参考にする（最小600px）
+        const previewHeight = document.getElementById('preview-frame').style.height;
+        const heightValue = parseInt(previewHeight) || 600;
+        iframe.style.height = isMobile ? 
+            Math.max(600, heightValue) + 'px' : 
+            Math.max(900, heightValue) + 'px';
         iframe.style.border = 'none';
         iframe.style.position = 'fixed';
         iframe.style.top = '0';
@@ -582,8 +651,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
                     
-                    // PDFをダウンロード
-                    const filename = 'download_' + getFormattedDate() + '.pdf';
+                    // PDFをダウンロード - ユーザー指定のファイル名を使用
+                    let filename;
+                    if (fileNameInput && fileNameInput.value.trim() !== '') {
+                        // ユーザー指定のファイル名を使用（拡張子を追加）
+                        filename = fileNameInput.value.trim() + '.pdf';
+                    } else {
+                        // デフォルトのファイル名生成（現在の日時を含む）
+                        filename = 'pdf_' + getFormattedDate() + '.pdf';
+                    }
                     
                     // iOS Safariの場合は特別な処理
                     const isIOS = isIOSDevice();
